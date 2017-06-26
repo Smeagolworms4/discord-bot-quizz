@@ -1,0 +1,17 @@
+{
+  "name": "discord-bot-quizz",
+  "version": "1.0.0",
+  "description": "Create a discord BOT QUIZZ",
+  "main": "index.js",
+  "scripts": {
+    "install": "cp config.json.dist config.json",
+    "start": "node index.js"
+  },
+  "author": "Damien Duboeuf <smeagolworms4@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.1.0",
+    "extend": "^3.0.1",
+    "fs-promise": "^2.0.3"
+  }
+}
