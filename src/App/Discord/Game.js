@@ -100,7 +100,7 @@ class Game {
 		this.channel.send(
 			" \n \n \n"+
 			"\n======================================================\n \n"+
-			"__QUESTION N°"+(this.current)+":__  ** ** ** ** **"+ question.text+"** ** ** ** ** "+ question.text+(question.timeout ? ' (vous avez '+question.timeout+' secondes)' : '')+"\n"+
+			"__QUESTION N°"+(this.current)+":__  ** ** ** ** **"+ question.text+"** ** ** ** ** "+(question.timeout ? ' (vous avez '+question.timeout+' secondes)' : '')+"\n"+
 			"\n======================================================\n \n"
 		);
 		this._wait = true;
