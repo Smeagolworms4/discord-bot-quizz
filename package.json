@@ -10,8 +10,11 @@
   "author": "Damien Duboeuf <smeagolworms4@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "csvtojson": "^1.1.7",
     "discord.js": "^11.1.0",
     "extend": "^3.0.1",
-    "fs-promise": "^2.0.3"
+    "fs-promise": "^2.0.3",
+    "google-spreadsheet-to-json": "^1.0.0",
+    "request-promise": "^4.2.1"
   }
 }

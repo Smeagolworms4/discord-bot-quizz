@@ -17,11 +17,19 @@ class Config {
 			.then((data) => {
 				let json = JSON.parse(data);
 				extend(this.values, json);
+				
+				
+				console.log('Configuration loaded', this.values);
+				
 				return this.values;
 			})
 			.catch((e) => {
 				console.error(e);
-				return _this.values;
+				
+				
+				console.log('Configuration default loaded', this.values);
+				
+				return this.values;
 			})
 		;
 	}

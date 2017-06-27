@@ -1,12 +1,13 @@
 const Config  = require('./App/Config.js');
 const Discord = require('./App/Discord.js');
-
+const QuestionManager = require('./App/QuestionManager.js');
 
 class App {
 	
 	constructor() {
 		this._config = null;
-		this._discod = null;
+		this._discord = null;
+		this._questionManager = null;
 	}
 	
 	/**
@@ -19,21 +20,29 @@ class App {
 	/**
 	 * @returns {Discord}
 	 */
-	get discod() {
-		return this._discod;
+	get discord() {
+		return this._discord;
+	}
+	
+	/**
+	 * @returns {QuestionManager}
+	 */
+	get questionManager() {
+		return this._questionManager;
 	}
 	
 	run() {
 		
 		this._config = new Config();
+		this._questionManager  = new QuestionManager(this);
 		
 		return this.config.load()
-			.then((config) => {
-				
-				console.log('Configuration loaded', config);
-				
-				this._discod = new Discord(this);
-				this.discod.start();
+			.then(() => {
+				return this._questionManager.load();
+			})
+			.then(() => {
+				this._discord = new Discord(this);
+				this.discord.connect();
 			})
 			.catch(function(e) {
 				console.error(e);

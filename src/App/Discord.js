@@ -1,4 +1,5 @@
 const Engine = require('discord.js');
+const Game = require('./Discord/Game.js');
 	
 class Discord {
 	
@@ -7,7 +8,8 @@ class Discord {
 	 */
 	constructor(app) {
 		this._app = app;
-		this._engin = null;
+		this._engine = null;
+		this._games = {};
 	}
 	
 	/**
@@ -31,8 +33,11 @@ class Discord {
 		return this.app.config;
 	}
 	
-	start () {
-		this.connect();
+	/**
+	 * @returns {QuestionManager}
+	 */
+	get questionManager() {
+		return this.app.questionManager;
 	}
 	
 	connect() {
@@ -45,23 +50,21 @@ class Discord {
 		this.engine.on('message', this.message.bind(this));
 		
 		let token = this.config.get('token');
-		console.log('Connect to discord with token: '+token);
+		console.log('Connect _to discord with token: '+token);
 		this.engine.login(token);
 	}
 	
+	/**
+	 * @param {Engine.Message} message
+	 */
 	message(message) {
-		
-		let commands = message.content.split(' ').filter((str) => {
-			return !!str.trim();
-		});
-		
-		console.log('commands', commands);
-		console.log(message);
-		
 		
 		if (message.channel && message.channel instanceof Engine.TextChannel) {
 			
 			let channel = message.channel;
+			let commands = message.content.split(' ').filter((str) => {
+				return !!str.trim();
+			});
 			
 			if (commands.length) {
 				let first = commands.shift();
@@ -69,14 +72,66 @@ class Discord {
 				if (first.toLowerCase() == this.config.get('command').toLowerCase()) {
 					
 					let action = commands.shift();
-					if(action == 'start') {
-						channel.sendMessage('Démarrage du QUIZZ !!!')
+					if(action.toLowerCase() == Discord.CMD_START) {
+						this.start(channel);
+						return;
 					}
+					if(action.toLowerCase() == Discord.CMD_STOP) {
+						this.stop(channel);
+						return;
+					}
+					if(action.toLowerCase() == Discord.CMD_LOAD) {
+						this.questionManager.load(channel)
+							.then(() => {
+								channel.send('Rechargement des questions. '+this.questionManager.questions.length+' questions chargéés.');
+							})
+						;
+						return;
+					}
+					if(action.toLowerCase() == Discord.CMD_SKIP) {
+						if (this._games[channel.id]) {
+							this._games[channel.id ].skip();
+						}
+						return;
+					}
+				}
+				
+				if (this._games[channel.id]) {
+					this._games[channel.id ].respond(message);
 				}
 			}
 		}
-		
-		
+	}
+	
+	/**
+	 * @param {Engine.TextChannel} channel
+	 */
+	start(channel) {
+		if (this._games[channel.id]) {
+			channel.send('Le QUIZZ est déjà en cours.');
+		} else {
+			channel.send('Démarrage du QUIZZ !!!');
+			this._games[channel.id] = new Game(this, channel);
+		}
+	}
+	
+	/**
+	 * @param {Engine.TextChannel} channel
+	 */
+	stop(channel) {
+		if (this._games[channel.id]) {
+			this._games[channel.id].stop();
+			delete(this._games[channel.id]);
+			channel.send('Arrêt du QUIZZ !!!');
+		} else {
+			channel.send('Aucun QUIZZ en cours.');
+		}
 	}
 }
+Discord.CMD_START = 'start';
+Discord.CMD_STOP  = 'stop';
+Discord.CMD_LOAD  = 'load';
+Discord.CMD_SKIP  = 'skip';
+
+
 module.exports = Discord;
