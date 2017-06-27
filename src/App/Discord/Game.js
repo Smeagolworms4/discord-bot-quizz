@@ -5,19 +5,22 @@ class Game {
 	/**
 	 * @param {Discord} discord
 	 * @param {Engine.TextChannel} channel
+	 * @param {number} rounds
 	 */
-	constructor(discord, channel) {
+	constructor(discord, channel, rounds) {
 		this._discord = discord;
 		this._channel = channel;
+		this._rounds = rounds;
 		
 		this._questions = [];
+		this._scores = {};
 		
+		this._wait = false;
 		this._to = setTimeout(this.step1.bind(this), 1000);
 	}
 	
-	
 	/**
-	 * @returns {App}
+	 * @return {Discord}
 	 */
 	get discord() {
 		return this._discord;
@@ -67,9 +70,9 @@ class Game {
 	
 	step1() {
 		this.channel.send(
-			" \n"+
+			" \n \n \n"+
 			"\n======================================================\n \n"+
-			"QUESTION N°"+this.current+1+" dans 5 secondes\n"+
+			"__QUESTION N°"+(this.current+1)+":__ dans 5 secondes\n"+
 			" \n======================================================\n \n"+
 			" \n"
 		);
@@ -95,11 +98,12 @@ class Game {
 		
 		let question = this.newQuestion();
 		this.channel.send(
-			" \n"+
+			" \n \n \n"+
 			"\n======================================================\n \n"+
-			"QUESTION N°"+this.current+": "+ question.text+(question.timeout ? ' (vous avez '+question.timeout+' secondes)' : '')+"\n"+
+			"__QUESTION N°"+(this.current)+":__  ** ** ** ** **"+ question.text+"** ** ** ** ** "+ question.text+(question.timeout ? ' (vous avez '+question.timeout+' secondes)' : '')+"\n"+
 			"\n======================================================\n \n"
 		);
+		this._wait = true;
 		this._to = null;
 		if (question.timeout) {
 			this._to = setTimeout(this.skip.bind(this), question.timeout * 1000);
@@ -113,12 +117,20 @@ class Game {
 		
 		let content  = message.content.replace(/[ \t\r\n]/g, '').toLowerCase();
 		
-		if (this.lastQuestion && this.lastQuestion.match(content)) {
+		if (this._wait && this.lastQuestion && this.lastQuestion.match(content)) {
 			this.channel.send(
 				"\n======================================================\n \n"+
-				"Bravo "+message.author+" vous avez trouvé la bonne réponse.\n"+
-				"\n======================================================\n \n"
+				"Bravo "+message.author+" vous avez trouvé la bonne réponse.\n"
 			);
+			
+			if (!this._scores[message.author.id]) {
+				this._scores[message.author.id] = {
+					author: message.author,
+					value: 0
+				};
+			}
+			this._scores[message.author.id].value++;
+			
 			this.next();
 		}
 	}
@@ -126,17 +138,107 @@ class Game {
 	skip() {
 		this.channel.send(
 			"\n======================================================\n \n"+
-			"Domage personne n'a trouvé la bonne réponse.\n" +
-			"\n======================================================\n \n"
+			"Domage personne n'a trouvé la bonne réponse.\n"
 		);
 		this.next();
 	}
 	
 	next() {
+		
+		this.displayScore();
+		
+		if (this.current == Math.min(this._rounds, this.questionManager.questions.length)) {
+			
+			this.displayFin();
+			
+			this.stop();
+			delete(this.discord.games[this.channel.id]);
+			return;
+		}
+		
+		this._wait = false;
 		if (this._to) {
 			clearTimeout(this._to);
 		}
-		this._to = setTimeout(this.step6.bind(this), 1000);
+		this._to = setTimeout(this.step1.bind(this), 1000);
+	}
+	
+	displayFin() {
+		
+		let text = '';
+		
+		let scores = Object.keys(this._scores).map((key) => {
+			return this._scores[key];
+		});
+		scores.sort((a, b) => {
+			return a.value - b.value;
+		});
+		
+		let l = 0;
+		let before = null;
+		for(let i = 0; i < scores.length; i++) {
+			
+			if (before != scores[i].value) {
+				before = scores[i].value;
+				l++;
+			}
+			
+			let pre = l+'e ';
+			if (l == 1) pre = ':first_place: ';
+			if (l == 2) break;
+			
+			text += "\n  - "+pre+scores[i].author+": "+scores[i].value+' point(s)'
+		}
+		if (text == '') {
+			text = "\n  - Aucun gagnant bande de loser ^^.\n"
+		}
+		
+		
+		this.channel.send(
+			"\n:champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne:\n \n"+
+			"Fin de la partie le gagnant est.... \n"
+			+text+
+			"\n\n\:champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne::champagne:\n \n"
+		);
+	}
+	
+	displayScore() {
+		
+		let text = '';
+		
+		let scores = Object.keys(this._scores).map((key) => {
+			return this._scores[key];
+		});
+		scores.sort((a, b) => {
+			return a.value - b.value;
+		});
+		
+		let l = 0;
+		let before = null;
+		for(let i = 0; i < scores.length; i++) {
+			
+			if (before != scores[i].value) {
+				before = scores[i].value;
+				l++;
+			}
+			
+			let pre = l+'e ';
+			if (l == 1) pre = ':first_place: ';
+			if (l == 2) pre = ':second_place: ';
+			if (l == 3) pre = ':third_place: ';
+			
+			text += "\n  - "+pre+scores[i].author+": "+scores[i].value+' point(s)'
+		}
+		if (text == '') {
+			text = "\n  - Aucune bonne réponses pour le moment.\n"
+		}
+		
+		
+		this.channel.send(
+			"\n\n\n** Les scores sont:**\n"+
+			text+
+			"\n\n\n\n======================================================\n\n\n\n"
+		);
 	}
 	
 	/**

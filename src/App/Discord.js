@@ -27,6 +27,13 @@ class Discord {
 	}
 	
 	/**
+	 * @return {{}}
+	 */
+	get games() {
+		return this._games;
+	}
+	
+	/**
 	 * @returns {Config}
 	 */
 	get config() {
@@ -68,12 +75,14 @@ class Discord {
 			
 			if (commands.length) {
 				let first = commands.shift();
+				let cmd = this.config.get('command').toLowerCase();
 				
-				if (first.toLowerCase() == this.config.get('command').toLowerCase()) {
+				if (first.toLowerCase() == cmd) {
 					
 					let action = commands.shift();
+					let number = parseInt(commands.shift(), 10);
 					if(action.toLowerCase() == Discord.CMD_START) {
-						this.start(channel);
+						this.start(channel, isNaN(number) ? 10 : number);
 						return;
 					}
 					if(action.toLowerCase() == Discord.CMD_STOP) {
@@ -94,6 +103,17 @@ class Discord {
 						}
 						return;
 					}
+					if(action.toLowerCase() == Discord.CMD_HELP) {
+						channel.send(
+							"Les commandes du QUIIZ sont:\n\n"+
+							" * **"+cmd+" "+Discord.CMD_HELP+"** : Affiche l'aide\n"+
+							" * **"+cmd+" "+Discord.CMD_START+"** [Nombre de question(optionnel)] : Démarre une partie\n"+
+							" * **"+cmd+" "+Discord.CMD_STOP+"** : Arrête la partie en court\n"+
+							" * **"+cmd+" "+Discord.CMD_LOAD+"** : Recharge les questions\n"+
+							" * **"+cmd+" "+Discord.CMD_SKIP+"** : Passe à la question suivante\n"
+						);
+						return;
+					}
 				}
 				
 				if (this._games[channel.id]) {
@@ -105,13 +125,14 @@ class Discord {
 	
 	/**
 	 * @param {Engine.TextChannel} channel
+	 * @param {number} rounds
 	 */
-	start(channel) {
+	start(channel, rounds) {
 		if (this._games[channel.id]) {
 			channel.send('Le QUIZZ est déjà en cours.');
 		} else {
-			channel.send('Démarrage du QUIZZ !!!');
-			this._games[channel.id] = new Game(this, channel);
+			channel.send('Démarrage du QUIZZ à '+rounds+' question(s) !!!');
+			this._games[channel.id] = new Game(this, channel, rounds);
 		}
 	}
 	
@@ -132,6 +153,7 @@ Discord.CMD_START = 'start';
 Discord.CMD_STOP  = 'stop';
 Discord.CMD_LOAD  = 'load';
 Discord.CMD_SKIP  = 'skip';
+Discord.CMD_HELP  = 'help';
 
 
 module.exports = Discord;
