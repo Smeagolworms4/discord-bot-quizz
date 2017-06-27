@@ -171,7 +171,7 @@ class Game {
 			return this._scores[key];
 		});
 		scores.sort((a, b) => {
-			return a.value - b.value;
+			return b.value - a.value;
 		});
 		
 		let l = 0;
@@ -210,7 +210,7 @@ class Game {
 			return this._scores[key];
 		});
 		scores.sort((a, b) => {
-			return a.value - b.value;
+			return b.value - a.value;
 		});
 		
 		let l = 0;
