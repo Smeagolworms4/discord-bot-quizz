@@ -81,38 +81,40 @@ class Discord {
 					
 					let action = commands.shift();
 					let number = parseInt(commands.shift(), 10);
-					if(action.toLowerCase() == Discord.CMD_START) {
-						this.start(channel, isNaN(number) ? 10 : number);
-						return;
-					}
-					if(action.toLowerCase() == Discord.CMD_STOP) {
-						this.stop(channel);
-						return;
-					}
-					if(action.toLowerCase() == Discord.CMD_LOAD) {
-						this.questionManager.load(channel)
-							.then(() => {
-								channel.send('Rechargement des questions. '+this.questionManager.questions.length+' questions chargéés.');
-							})
-						;
-						return;
-					}
-					if(action.toLowerCase() == Discord.CMD_SKIP) {
-						if (this._games[channel.id]) {
-							this._games[channel.id ].skip();
+					if (action) {
+						if(action.toLowerCase() == Discord.CMD_START) {
+							this.start(channel, isNaN(number) ? 10 : number);
+							return;
 						}
-						return;
-					}
-					if(action.toLowerCase() == Discord.CMD_HELP) {
-						channel.send(
-							"Les commandes du QUIIZ sont:\n\n"+
-							" * **"+cmd+" "+Discord.CMD_HELP+"** : Affiche l'aide\n"+
-							" * **"+cmd+" "+Discord.CMD_START+"** [Nombre de question(optionnel)] : Démarre une partie\n"+
-							" * **"+cmd+" "+Discord.CMD_STOP+"** : Arrête la partie en court\n"+
-							" * **"+cmd+" "+Discord.CMD_LOAD+"** : Recharge les questions\n"+
-							" * **"+cmd+" "+Discord.CMD_SKIP+"** : Passe à la question suivante\n"
-						);
-						return;
+						if(action.toLowerCase() == Discord.CMD_STOP) {
+							this.stop(channel);
+							return;
+						}
+						if(action.toLowerCase() == Discord.CMD_LOAD) {
+							this.questionManager.load(channel)
+								.then(() => {
+									channel.send('Rechargement des questions. '+this.questionManager.questions.length+' questions chargéés.');
+								})
+							;
+							return;
+						}
+						if(action.toLowerCase() == Discord.CMD_SKIP) {
+							if (this._games[channel.id]) {
+								this._games[channel.id ].skip();
+							}
+							return;
+						}
+						if(action.toLowerCase() == Discord.CMD_HELP) {
+							channel.send(
+								"Les commandes du QUIIZ sont:\n\n"+
+								" * **"+cmd+" "+Discord.CMD_HELP+"** : Affiche l'aide\n"+
+								" * **"+cmd+" "+Discord.CMD_START+"** [Nombre de question(optionnel)] : Démarre une partie\n"+
+								" * **"+cmd+" "+Discord.CMD_STOP+"** : Arrête la partie en court\n"+
+								" * **"+cmd+" "+Discord.CMD_LOAD+"** : Recharge les questions\n"+
+								" * **"+cmd+" "+Discord.CMD_SKIP+"** : Passe à la question suivante\n"
+							);
+							return;
+						}
 					}
 				}
 				
